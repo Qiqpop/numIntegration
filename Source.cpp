@@ -6,7 +6,8 @@ using namespace std;
 
 double eMach();
 double functione(double x);
-double centralRect(double x, double h, int n);
+double newtonСotes(double b, double a, int n);
+double centralRect(double b, double a, int n);
 double trapeze(double b, double a, int n);
 double simpson(double b, double a, int n);
 
@@ -15,10 +16,16 @@ int main() {
 	int n;
 	double b, a;
 	cout << "Введите: верхний придел интегрирования, нижний и разбиение с шагом 10" << endl;
-	cin >> b >> a >> n;
+	//cin >> b >> a >> n;
+	cin >> n; b = M_PI / 2; a = 0;	// Для тригонометрических пределов интегрирования
+	cout << "Формула Ньютона-Котеса" << endl;
+	for (int i = 3; i <= 7; i++) {
+		cout << "n=" << i << '\t' << newtonСotes(b, a, i) << endl;
+	}
+	cout << endl;
 	cout << "Центр. прям.\tТрап.\t\tСимпсона\n";
 	for (int i = 10; i <= n; i+=10) {
-		cout << "Разбиение " << i << endl;
+		//cout << "Разбиение " << i << endl;
 		cout << centralRect(b, a, i) << '\t';
 		cout  << trapeze(b, a, i) << '\t';
 		cout  << simpson(b, a, i) << endl;
@@ -28,7 +35,59 @@ int main() {
 
 // Интегрируемая функция
 double functione(double x) {
-	return (cos(x) - 1) / x;
+	//return (cos(x) - 1) / x;
+	return cos(x) / (1 + x);
+}
+
+// Формула Ньютона-Котеса 
+double newtonСotes(double b, double a, int n) {
+	double H[8];
+	double h = b - a;
+	double sum = 0;
+	double result = 0;
+	switch (n) {
+	case 3:
+		H[0] = H[3] = 1 / 8.0;
+		H[1] = H[2] = 3 / 8.0;
+		break;
+	case 4:
+		H[0] = H[4] = 7 / 90.0;
+		H[1] = H[3] = 32 / 90.0;
+		H[2] = 12 / 90.0;
+		break;
+	case 5:
+		H[0] = H[5] = 19 / 288.0;
+		H[1] = H[4] = 25 / 96.0;
+		H[2] = H[3] = 25 / 144.0;
+		break;
+	case 6:
+		H[0] = H[6] = 41 / 840.0;
+		H[1] = H[5] = 9 / 35.0;
+		H[2] = H[4] = 9 / 280.0;
+		H[3] = 34 / 105.0;
+		break;
+	case 7:
+		H[0] = H[7] = 751 / 17280.0;
+		H[1] = H[6] = 3577 / 17280.0;
+		H[2] = H[5] = 1323 / 17280.0;
+		H[3] = H[4] = 2989 / 17280.0;
+		break;
+	default:
+		cout << "Неизвестный коэффициент" << endl;
+	}
+	double x[10];
+	int i = 0;
+	for (double xn = a; xn < b; xn += h / n, i++) {
+		x[i] = xn;
+	}
+	for (i = 0; i <= n; i++) {
+		double xi = x[i];
+		if (xi == 0) xi += eMach();
+		sum += functione(xi) * H[i];
+	}
+	result += sum;
+	result *= h;
+	return result;
 }
 
 // Формула центральных прямоугольников
@@ -44,7 +103,7 @@ double centralRect(double b, double a, int n) {
 	return result;
 }
 
-// Формула трапеции
+// Формула трапеций
 double trapeze(double b, double a, int n) {
 	double h = (b - a) / n;
 	double result = (
